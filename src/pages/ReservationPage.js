@@ -2,10 +2,20 @@ import React, { useState, useEffect, useCallback } from 'react';
 import apiClient from '../api/client';
 import Availability from '../components/Availability';
 
-// Helper to format date for input[type=datetime-local]
+const getMinDateTime = () => {
+  const now = new Date();
+  const thirtyMinutes = 30 * 60 * 1000; // 30 minutes in milliseconds
+
+  const roundedMs = Math.ceil(now.getTime() / thirtyMinutes) * thirtyMinutes;
+  const minDate = new Date(roundedMs);
+
+  minDate.setMinutes(minDate.getMinutes() - minDate.getTimezoneOffset());
+  
+  return minDate.toISOString().slice(0, 16);
+};
+
 const toLocalDateTimeString = (isoDate) => {
   const date = new Date(isoDate);
-  // Adjust for timezone offset
   const timezoneOffset = date.getTimezoneOffset() * 60000;
   const localDate = new Date(date.getTime() - timezoneOffset);
   return localDate.toISOString().slice(0, 16);
@@ -58,6 +68,7 @@ const ReservationPage = () => {
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (availability && availability.available < 1) {
@@ -72,7 +83,7 @@ const ReservationPage = () => {
     try {
       const payload = {
         ...formData,
-        time: new Date(formData.time).toISOString(), // Ensure time is in ISO format
+        time: new Date(formData.time).toISOString(),
         guests: parseInt(formData.guests, 10),
       };
       const response = await apiClient.post('/reservations', payload);
@@ -80,16 +91,27 @@ const ReservationPage = () => {
         table: response.data.tableNumber,
         slot: toLocalDateTimeString(response.data.slot),
       });
-      // Clear form
       setFormData({ time: '', guests: 2, name: '', email: '', phone: '' });
       setAvailability(null);
     } catch (err) {
-      const errorMessage = err.response?.data?.message || "An unexpected error occurred.";
-      setSubmitError(errorMessage);
+      
+      console.error("Reservation submission failed:", err.response?.data || err);
+
+      const errorData = err.response?.data;
+      if (errorData?.details?.[0]?.msg) {
+        setSubmitError(errorData.details[0].msg);
+      } else if (errorData?.message) {
+        setSubmitError(errorData.message);
+      } else {
+        setSubmitError("An unexpected error occurred. Please try again.");
+      }
+      // --- END OF FIX ---
     } finally {
       setLoading(false);
     }
   };
+
+
 
   if (submitSuccess) {
     return (
@@ -115,13 +137,20 @@ const ReservationPage = () => {
       <h1 className="text-3xl md:text-4xl font-serif font-bold text-center text-amber-900 mb-8">Make a Reservation</h1>
       <form onSubmit={handleSubmit} className="bg-white p-6 rounded-xl shadow-md border border-amber-100">
         <div className="mb-4">
-          <label className="block text-gray-700 font-medium mb-2">Date & Time</label>
+          <label className="block text-gray-700 font-medium mb-2">
+            Date & Time
+            <span className="block text-sm text-gray-500 font-normal">
+              Hours: Mon-Sat: 5PM–11PM, Sun: 5PM–9PM
+            </span>
+          </label>
           <input
             type="datetime-local"
             name="time"
             value={formData.time}
             onChange={handleChange}
             required
+            min={getMinDateTime()}   
+            step="1800"             
             className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent"
           />
         </div>
