@@ -1,30 +1,6 @@
 import React, { useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
 
-// --- Spinner (for button) ---
-const ButtonSpinner = () => (
-  <svg
-    className="animate-spin h-5 w-5 text-white mx-auto"
-    xmlns="http://www.w3.org/2000/svg"
-    fill="none"
-    viewBox="0 0 24 24"
-  >
-    <circle
-      className="opacity-25"
-      cx="12"
-      cy="12"
-      r="10"
-      stroke="currentColor"
-      strokeWidth="4"
-    ></circle>
-    <path
-      className="opacity-75"
-      fill="currentColor"
-      d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
-    ></path>
-  </svg>
-);
-
 // --- Navbar ---
 const Navbar = () => (
   <nav className="bg-amber-900 text-amber-50 p-4 shadow-md">
@@ -103,32 +79,15 @@ const ReservationPage = () => {
     setFormData({ ...formData, [name]: value });
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
     setMessage({ type: 'info', text: 'Processing...' });
-
-    try {
-      const response = await fetch('http://localhost:8000/api/reservations', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          time: new Date(formData.time).toISOString(),
-          guests: parseInt(formData.guests),
-          name: formData.name,
-          email: formData.email,
-          phone: formData.phone
-        })
-      });
-      const data = await response.json();
-      setMessage({ type: 'success', text: `Reservation confirmed! Table #${data.tableNumber}` });
+    // Simulate success (backend integration pending)
+    setTimeout(() => {
+      setMessage({ type: 'success', text: 'Reservation confirmed! Table #7' });
       setFormData({ time: '', guests: 2, name: '', email: '', phone: '' });
-    } catch (error) {
-      const msg = error.message || 'Failed to book. Try another time.';
-      setMessage({ type: 'error', text: msg });
-    }
+    }, 500);
   };
-
-  const isLoading = message.type === 'info';
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-2xl">
@@ -143,7 +102,6 @@ const ReservationPage = () => {
             onChange={handleChange}
             required
             className="w-full p-2 border rounded"
-            disabled={isLoading}
           />
         </div>
         <div>
@@ -157,7 +115,6 @@ const ReservationPage = () => {
             onChange={handleChange}
             required
             className="w-full p-2 border rounded"
-            disabled={isLoading}
           />
         </div>
         <div>
@@ -169,7 +126,6 @@ const ReservationPage = () => {
             onChange={handleChange}
             required
             className="w-full p-2 border rounded"
-            disabled={isLoading}
           />
         </div>
         <div>
@@ -181,7 +137,6 @@ const ReservationPage = () => {
             onChange={handleChange}
             required
             className="w-full p-2 border rounded"
-            disabled={isLoading}
           />
         </div>
         <div>
@@ -192,105 +147,20 @@ const ReservationPage = () => {
             value={formData.phone}
             onChange={handleChange}
             className="w-full p-2 border rounded"
-            disabled={isLoading}
           />
         </div>
         <button
           type="submit"
-          disabled={isLoading}
-          className={`w-full flex items-center justify-center gap-2 py-2 rounded text-white transition ${
-            isLoading
-              ? 'bg-gray-400 cursor-not-allowed'
-              : 'bg-amber-700 hover:bg-amber-800'
-          }`}
+          className="w-full bg-amber-700 hover:bg-amber-800 text-white py-2 rounded"
         >
-          {isLoading ? <ButtonSpinner /> : 'Reserve Table'}
+          Reserve Table
         </button>
-        {message.text && message.type !== 'info' && (
-          <div className={`mt-4 p-3 rounded ${
-            message.type === 'success'
-              ? 'bg-green-100 text-green-800'
-              : 'bg-red-100 text-red-800'
-          }`}>
+        {message.text && (
+          <div className={`mt-4 p-3 rounded ${message.type === 'success' ? 'bg-green-100 text-green-800' : message.type === 'error' ? 'bg-red-100 text-red-800' : 'bg-blue-100 text-blue-800'}`}>
             {message.text}
           </div>
         )}
       </form>
-    </div>
-  );
-};
-
-// --- Newsletter Component ---
-const Newsletter = () => {
-  const [email, setEmail] = useState('');
-  const [name, setName] = useState('');
-  const [message, setMessage] = useState({ type: '', text: '' });
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setMessage({ type: 'info', text: 'Processing...' });
-
-    try {
-      await fetch('http://localhost:8000/api/newsletter', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, name })
-      });
-      setMessage({ type: 'success', text: 'Thank you for subscribing!' });
-      setEmail('');
-      setName('');
-    } catch (error) {
-      setMessage({ type: 'error', text: 'Invalid email. Please try again.' });
-    }
-  };
-
-  const isLoading = message.type === 'info';
-
-  return (
-    <div className="bg-amber-50 py-8">
-      <div className="container mx-auto px-4 max-w-2xl">
-        <h2 className="text-2xl font-serif text-center mb-4">Join Our Newsletter</h2>
-        <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-2">
-          <input
-            type="text"
-            placeholder="Your Name"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            className="flex-1 p-2 rounded"
-            required
-            disabled={isLoading}
-          />
-          <input
-            type="email"
-            placeholder="Your Email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className="flex-1 p-2 rounded"
-            required
-            disabled={isLoading}
-          />
-          <button
-            type="submit"
-            disabled={isLoading}
-            className={`px-4 flex items-center justify-center gap-2 rounded text-white transition ${
-              isLoading
-                ? 'bg-gray-400 cursor-not-allowed'
-                : 'bg-amber-700 hover:bg-amber-800'
-            }`}
-          >
-            {isLoading ? <ButtonSpinner /> : 'Subscribe'}
-          </button>
-        </form>
-        {message.text && message.type !== 'info' && (
-          <div className={`mt-4 p-3 rounded text-center ${
-            message.type === 'success'
-              ? 'bg-green-100 text-green-800'
-              : 'bg-red-100 text-red-800'
-          }`}>
-            {message.text}
-          </div>
-        )}
-      </div>
     </div>
   );
 };
@@ -333,6 +203,48 @@ const GalleryPage = () => (
     </div>
   </div>
 );
+
+// --- Newsletter Component ---
+const Newsletter = () => {
+  const [email, setEmail] = useState('');
+  const [name, setName] = useState('');
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    alert('Thank you for subscribing!');
+    setEmail('');
+    setName('');
+  };
+
+  return (
+    <div className="bg-amber-50 py-8">
+      <div className="container mx-auto px-4 max-w-2xl">
+        <h2 className="text-2xl font-serif text-center mb-4">Join Our Newsletter</h2>
+        <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-2">
+          <input
+            type="text"
+            placeholder="Your Name"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            className="flex-1 p-2 rounded"
+            required
+          />
+          <input
+            type="email"
+            placeholder="Your Email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            className="flex-1 p-2 rounded"
+            required
+          />
+          <button type="submit" className="bg-amber-700 hover:bg-amber-800 text-white px-4 rounded whitespace-nowrap">
+            Subscribe
+          </button>
+        </form>
+      </div>
+    </div>
+  );
+};
 
 // --- Footer ---
 const Footer = () => (
