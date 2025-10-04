@@ -1,32 +1,48 @@
-import React from 'react';
+import React, { useState } from 'react';
+import Lightbox from "yet-another-react-lightbox";
+import "yet-another-react-lightbox/styles.css";
 
-const galleryItems = [
-  { id: 1, title: 'The Interior Ambiance', category: 'Restaurant View' },
-  { id: 2, title: 'Our Grilled Salmon Dish', category: 'From the Menu' },
-  { id: 3, title: 'A Special Event Night', category: 'Behind the Scenes' },
-  { id: 4, title: 'The Cozy Corner Table', category: 'Restaurant View' },
-  { id: 5, title: 'Our Famous Tiramisu', category: 'From the Menu' },
-  { id: 6, title: 'Chef in the Kitchen', category: 'Behind the Scenes' },
+const galleryImages = [
+  { id: 1, src: '/images/gallery-cafe-interior.webp', title: 'The Interior Ambiance' },
+  { id: 2, src: '/images/gallery-ribeye-steak.webp', title: 'Our Grilled Ribeye Steak' },
+  { id: 3, src: '/images/gallery-special-event.webp', title: 'A Special Event Night' },
+  { id: 4, src: '/images/home-cafe-fausse.webp', title: 'Artisan Coffee Creations' },
+  { id: 5, src: '/images/gallery-outdoor-seating.png', title: 'Outdoor Seating Area' },
+  { id: 6, src: '/images/gallery-dessert-platter.webp', title: 'Decadent Dessert Platter' },
 ];
 
-const GalleryPage = () => (
-  <div className="container mx-auto px-4 py-12">
-    <h1 className="text-3xl md:text-4xl font-serif font-bold text-center text-amber-900 mb-12">Gallery</h1>
-    {/* Lightbox feature (FR-13) would be implemented here by wrapping the grid items */}
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-      {galleryItems.map((item) => (
-        <div key={item.id} className="group aspect-square bg-amber-100 rounded-xl flex items-center justify-center border-2 border-amber-200 overflow-hidden cursor-pointer">
-          <div className="text-center p-4">
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-16 w-16 mx-auto mb-3 text-amber-400 group-hover:text-amber-500 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-            </svg>
-            <span className="text-amber-800 font-medium block">{item.title}</span>
-            <span className="text-amber-600 text-sm">{item.category}</span>
+const slides = galleryImages.map(({ src }) => ({ src }));
+
+const GalleryPage = () => {
+  const [index, setIndex] = useState(-1);
+
+  return (
+    <div className="container mx-auto px-4 py-12">
+      <h1 className="text-3xl md:text-4xl font-serif font-bold text-center text-amber-900 mb-12">Gallery</h1>
+      
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        {galleryImages.map((image, i) => (
+          <div 
+            key={image.id} 
+            className="group relative cursor-pointer overflow-hidden rounded-xl" 
+            onClick={() => setIndex(i)}
+          >
+            <img src={image.src} alt={image.title} className="w-full h-full object-cover aspect-square transition-transform duration-300 group-hover:scale-110" />
+            <div className="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity rounded-xl">
+              <p className="text-white text-lg font-semibold text-center px-2">{image.title}</p>
+            </div>
           </div>
-        </div>
-      ))}
+        ))}
+      </div>
+
+      <Lightbox
+        open={index >= 0}
+        index={index}
+        close={() => setIndex(-1)}
+        slides={slides}
+      />
     </div>
-  </div>
-);
+  );
+};
 
 export default GalleryPage;

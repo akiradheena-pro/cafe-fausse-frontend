@@ -9,9 +9,10 @@ import ReservationPage from './pages/ReservationPage';
 import AboutPage from './pages/AboutPage';
 import GalleryPage from './pages/GalleryPage';
 
+// --- Main App Structure ---
 const AppContent = () => {
   return (
-    <div className="flex flex-col min-h-screen bg-white">
+    <div className="flex flex-col min-h-screen ">
       <Navbar />
       <main className="flex-grow">
         <Routes>
